@@ -9,7 +9,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 @RestController
-@RequestMapping("/workspace-management")
+@RequestMapping("/{tenant-id}/workspace-management")
 public class WorkspaceManagementController {
     @GetMapping
     public ResponseEntity<String> getStringHello() throws UnknownHostException {

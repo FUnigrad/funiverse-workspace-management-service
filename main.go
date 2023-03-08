@@ -8,9 +8,10 @@ import (
 func main() {
 	r := gin.Default()
 	r.GET("/pods", func(ctx *gin.Context) {
-		data, err := goclient.GetPods()
+		data, err := goclient.GetPodsName()
 		if err != nil {
 			ctx.JSON(500, err.Error())
+			return
 		}
 		ctx.JSON(200, data)
 	})

@@ -2,8 +2,8 @@ package goclient
 
 import (
 	"context"
-	"encoding/json"
 
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -23,7 +23,7 @@ func NewClient() (*kubernetes.Clientset, error) {
 	return clientset, err
 }
 
-func GetPods() ([]byte, error) {
+func GetPodsName() ([]v1.Pod, error) {
 
 	clientset, err := NewClient()
 
@@ -37,10 +37,7 @@ func GetPods() ([]byte, error) {
 		return nil, err
 	}
 
-	data, err := json.Marshal(pods.Items)
-	if err != nil {
-		return nil, err
-	}
+	podList := pods.Items
 
-	return data, nil
+	return podList, nil
 }

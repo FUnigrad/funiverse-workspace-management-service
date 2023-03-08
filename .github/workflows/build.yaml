@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - "dev"
+  pull_request
 
 env:
   IMAGE_NAME: ${{vars.WORKSPACE_SERVICE_REPO}}

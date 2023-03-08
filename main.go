@@ -1,21 +1,13 @@
 package main
 
-import (
-	"io"
-	"log"
-	"net/http"
-
-	goclient "github.com/FUnigrad/funiverse-workspace-service/internal/goclient"
-)
+import "github.com/gin-gonic/gin"
 
 func main() {
-	// Hello world, the web server
-
-	helloHandler := func(w http.ResponseWriter, req *http.Request) {
-		io.WriteString(w, "Hello, world!\n")
-	}
-
-	http.HandleFunc("/hello", helloHandler)
-	http.HandleFunc("/pods", goclient.GetPods)
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	r := gin.Default()
+	r.GET("/ping", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"message": "pong",
+		})
+	})
+	r.Run() // listen and serve on 0.0.0.0:8080
 }

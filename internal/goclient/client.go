@@ -3,7 +3,6 @@ package goclient
 import (
 	"context"
 	"encoding/json"
-	"net/http"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -24,27 +23,24 @@ func NewClient() (*kubernetes.Clientset, error) {
 	return clientset, err
 }
 
-func GetPods(w http.ResponseWriter, r *http.Request) {
+func GetPods() ([]byte, error) {
 
 	clientset, err := NewClient()
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		return nil, err
 	}
 
 	pods, err := clientset.CoreV1().Pods("").List(context.TODO(), metav1.ListOptions{})
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		return nil, err
 	}
 
 	data, err := json.Marshal(pods.Items)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		return nil, err
 	}
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(data)
+
+	return data, nil
 }

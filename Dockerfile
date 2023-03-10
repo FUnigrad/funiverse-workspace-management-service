@@ -10,4 +10,4 @@ WORKDIR /app
 COPY --from=build /app/main /app/main
 COPY --from=build /app/config /app/config 
 ENV ENV=prod
-# ENTRYPOINT ["/app/main"]
+ENTRYPOINT ["/app/main"]

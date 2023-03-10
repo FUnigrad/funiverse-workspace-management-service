@@ -13,21 +13,20 @@ func main() {
 	config, err := config.LoadConfig()
 
 	if err != nil {
-		log.Fatal("Cannot load config: ", err)
+		log.Fatalln("Cannot load config: ", err)
 	}
 
 	client, err := goclient.NewClient(config)
 	if err != nil {
-		log.Fatal("Cannot init K8s Client:", err)
+		log.Fatalln("Cannot init K8s Client:", err)
 	}
-	// // pod, _ := client.GetPodsName()
 
-	// fmt.Printf("%s", &pod[1])
+	// fmt.Println(client)
 
 	server := handler.NewServer(client)
 
 	err = server.Start(config)
 	if err != nil {
-		log.Fatal("Cannot start server:", err)
+		log.Fatalln("Cannot start server:", err)
 	}
 }

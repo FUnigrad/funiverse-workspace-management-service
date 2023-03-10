@@ -6,6 +6,8 @@ COPY . .
 RUN go build -o main main.go
 
 FROM alpine
-COPY --from=build /app/main .
-
-ENTRYPOINT ["./main"]
+WORKDIR /app
+COPY --from=build /app/main /app/main
+COPY --from=build /app/config /app/config 
+ENV ENV=prod
+# ENTRYPOINT ["/app/main"]

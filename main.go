@@ -18,7 +18,7 @@ func main() {
 
 	client, err := goclient.NewClient(config)
 	if err != nil {
-		log.Fatal("Cannot init K8s Client")
+		log.Fatal("Cannot init K8s Client:", err)
 	}
 	// // pod, _ := client.GetPodsName()
 

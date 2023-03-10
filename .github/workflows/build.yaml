@@ -9,7 +9,7 @@ on:
 env:
   IMAGE_NAME: ${{vars.WORKSPACE_SERVICE_REPO}}
   APP_NAME: Workspace Management Service
-
+  URL : http://52.77.34.138:30002
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
@@ -113,5 +113,5 @@ jobs:
           severity: info
           details: |
             Deploy **${{env.APP_NAME}}** Success!
-            URL: funiverse.world:32000
+            URL: ${{URL}}
           webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}

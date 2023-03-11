@@ -5,7 +5,7 @@ import (
 
 	"github.com/FUnigrad/funiverse-workspace-service/config"
 	"github.com/FUnigrad/funiverse-workspace-service/goclient"
-	"github.com/FUnigrad/funiverse-workspace-service/handler"
+	"github.com/FUnigrad/funiverse-workspace-service/model"
 )
 
 func main() {
@@ -23,10 +23,18 @@ func main() {
 
 	// fmt.Println(client)
 
-	server := handler.NewServer(client)
-
-	err = server.Start(config)
-	if err != nil {
-		log.Fatalln("Cannot start server:", err)
+	workspace := model.Workspace{
+		Code: "fudn",
 	}
+
+	err = client.CreateWorkspace(workspace)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	// server := handler.NewServer(client)
+
+	// err = server.Start(config)
+	// if err != nil {
+	// 	log.Fatalln("Cannot start server:", err)
+	// }
 }

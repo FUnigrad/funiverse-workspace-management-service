@@ -10,22 +10,24 @@ type NamespaceConfig struct {
 }
 
 type NamespaceTemplate struct {
-	NamespaceResult schema.GroupVersionKind
-	Namespace       unstructured.Unstructured
+	NamespaceRes    schema.GroupVersionResource
+	NamespaceSchema *unstructured.Unstructured
 }
 
-func (namespace *NamespaceTemplate) New(config NamespaceConfig) {
-	namespace.NamespaceResult = schema.GroupVersionKind{
-		Group:   "core",
-		Version: "v1",
-		Kind:    "Namespace",
-	}
-	namespace.Namespace = unstructured.Unstructured{
-		Object: map[string]interface{}{
-			"apiVersion": "v1",
-			"Kind":       "Namespace",
-			"metadata": map[string]interface{}{
-				"name": config.Name,
+func NewNamespaceTemplate(config NamespaceConfig) NamespaceTemplate {
+	return NamespaceTemplate{
+		NamespaceRes: schema.GroupVersionResource{
+			Group:    "",
+			Version:  "v1",
+			Resource: "namespaces",
+		},
+		NamespaceSchema: &unstructured.Unstructured{
+			Object: map[string]interface{}{
+				"apiVersion": "v1",
+				"Kind":       "Namespace",
+				"metadata": map[string]interface{}{
+					"name": config.Name,
+				},
 			},
 		},
 	}

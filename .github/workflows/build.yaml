@@ -4,17 +4,29 @@ on:
   push:
     branches:
       - "dev"
+  pull_request:
 
 env:
   IMAGE_NAME: ${{vars.WORKSPACE_SERVICE_REPO}}
   APP_NAME: Workspace Management Service
+  FILE_PATH: config/system/5-workspace-service-deployment.yaml
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
-    timeout-minutes: 2
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Cache Docker layers
+        uses: actions/cache@v3
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
 
       - name: Login to Docker Hub
         uses: docker/login-action@v2
@@ -30,7 +42,9 @@ jobs:
           push: true
           tags: |
             ${{env.IMAGE_NAME}}:latest
-
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+      
       - name: Build Success
         uses : rjstone/discord-webhook-notify@v1
         if: success()
@@ -48,7 +62,11 @@ jobs:
           details: |
             Build **${{env.APP_NAME}}** failed!
           webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
-    
+      
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
     outputs:
       version: ${{steps.build.outputs.digest}}
 
@@ -68,8 +86,7 @@ jobs:
       
       - name: Update Manifest
         run: |
-          cd config/3-system
-          sed -i "s+${{env.IMAGE_NAME}}.*+${{env.IMAGE_NAME}}@${{env.VERSION}}+g" 3-workspace-service-deployment.yaml
+          sed -i "s+${{env.IMAGE_NAME}}.*+${{env.IMAGE_NAME}}@${{env.VERSION}}+g" ${{env.FILE_PATH}}
       
       - name: Commit and push
         run: |
@@ -95,5 +112,5 @@ jobs:
           severity: info
           details: |
             Deploy **${{env.APP_NAME}}** Success!
-            URL: funiverse.world:32000
+            URL: http://52.77.34.138:30002
           webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}

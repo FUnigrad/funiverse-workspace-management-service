@@ -1,13 +1,38 @@
 package main
 
-import "github.com/gin-gonic/gin"
+import (
+	"log"
+
+	"github.com/FUnigrad/funiverse-workspace-service/config"
+	"github.com/FUnigrad/funiverse-workspace-service/goclient"
+	"github.com/FUnigrad/funiverse-workspace-service/handler"
+)
 
 func main() {
-	r := gin.Default()
-	r.GET("/ping", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "pong",
-		})
-	})
-	r.Run() // listen and serve on 0.0.0.0:8080
+
+	config, err := config.LoadConfig()
+
+	if err != nil {
+		log.Fatalln("Cannot load config: ", err)
+	}
+
+	client, err := goclient.NewClient(config)
+	if err != nil {
+		log.Fatalln("Cannot init K8s Client:", err)
+	}
+
+	// fmt.Println(client)
+
+	// workspace := model.Workspace{
+	// 	Code: "fudn",
+	// }
+
+	// client.DeleteWorkspace(workspace)
+
+	server := handler.NewServer(client)
+
+	err = server.Start(config)
+	if err != nil {
+		log.Fatalln("Cannot start server:", err)
+	}
 }

@@ -86,7 +86,6 @@ jobs:
       
       - name: Update Manifest
         run: |
-          cd config/3-system
           sed -i "s+${{env.IMAGE_NAME}}.*+${{env.IMAGE_NAME}}@${{env.VERSION}}+g" ${{env.FILE_PATH}}
       
       - name: Commit and push

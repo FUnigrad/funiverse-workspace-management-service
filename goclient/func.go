@@ -2,7 +2,7 @@ package goclient
 
 import (
 	"context"
-	"log"
+	"fmt"
 
 	"github.com/FUnigrad/funiverse-workspace-service/goclient/template"
 	"github.com/FUnigrad/funiverse-workspace-service/model"
@@ -16,12 +16,12 @@ func (client *GoClient) CreateWorkspace(workspace model.Workspace) error {
 	_, err := client.CreateNamespace(workspace.Code)
 
 	if err != nil {
-		log.Fatalln(err)
+		fmt.Println(err.Error())
 	}
 
 	_, err = client.CreateConfigMap(workspace.Code)
 	if err != nil {
-		return err
+		fmt.Println(err.Error())
 	}
 
 	volumeConfig := template.VolumeConfig{
@@ -32,10 +32,13 @@ func (client *GoClient) CreateWorkspace(workspace model.Workspace) error {
 	err = client.CreateVolume(volumeConfig)
 
 	if err != nil {
-		return err
+		fmt.Println(err.Error())
 	}
-
-	return nil
+	err = client.CreateMySql(workspace.Code)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	return err
 }
 
 func (client *GoClient) CreateNamespace(name string) (*Template, error) {
@@ -87,6 +90,26 @@ func (client *GoClient) CreateVolume(config template.VolumeConfig) error {
 	_, err = client.Client.Resource(pvcTemplate.PvcRes).Namespace(config.Name).Create(
 		context.TODO(),
 		pvcTemplate.PvcSchema,
+		metav1.CreateOptions{},
+	)
+
+	return err
+}
+
+func (client *GoClient) CreateMySql(namespace string) error {
+	mySqlTemplate := template.NewMySqlTemplate()
+
+	_, err := client.Client.Resource(template.CreateDeploymentResource()).Namespace(namespace).Create(
+		context.TODO(),
+		mySqlTemplate.Deploy,
+		metav1.CreateOptions{},
+	)
+	if err != nil {
+		return err
+	}
+	_, err = client.Client.Resource(template.CreateServiceResource()).Namespace(namespace).Create(
+		context.TODO(),
+		mySqlTemplate.Service,
 		metav1.CreateOptions{},
 	)
 

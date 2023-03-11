@@ -1,8 +1,6 @@
 package template
 
 import (
-	"fmt"
-
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
@@ -28,7 +26,7 @@ func NewConfigMapTemplate(config ConfigMapConfig) ConfigMapTemplate {
 				"apiVersion": "v1",
 				"Kind":       "ConfigMap",
 				"metadata": map[string]interface{}{
-					"name": fmt.Sprintf("config-for-%s", config.Name),
+					"name": "config",
 				},
 				"data": map[string]interface{}{
 					"MYSQL_ROOT_PASSWORD":           "root",

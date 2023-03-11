@@ -9,6 +9,7 @@ on:
 env:
   IMAGE_NAME: ${{vars.WORKSPACE_SERVICE_REPO}}
   APP_NAME: Workspace Management Service
+  FILE_PATH: config/system/5-workspace-service-deployment.yaml
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
@@ -86,7 +87,7 @@ jobs:
       - name: Update Manifest
         run: |
           cd config/3-system
-          sed -i "s+${{env.IMAGE_NAME}}.*+${{env.IMAGE_NAME}}@${{env.VERSION}}+g" 3-workspace-service-deployment.yaml
+          sed -i "s+${{env.IMAGE_NAME}}.*+${{env.IMAGE_NAME}}@${{env.VERSION}}+g" ${{env.FILE_PATH}}
       
       - name: Commit and push
         run: |

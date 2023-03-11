@@ -7,7 +7,6 @@ import (
 type IWorkspaceService interface {
 	GetAllWorkspace() []model.Workspace
 	GetWorkspaceById(int64) model.Workspace
-	CreateWorkspace(model.Workspace) model.Workspace
 }
 
 type WorkspaceService struct {
@@ -23,8 +22,4 @@ func (service *WorkspaceService) GetAllWorkspace() []model.Workspace {
 
 func (service *WorkspaceService) GetWorkspaceById(id int64) model.Workspace {
 	return service.worspaces[id]
-}
-func (service *WorkspaceService) CreateWorkspace(workspace model.Workspace) model.Workspace {
-	service.worspaces = append(service.worspaces, workspace)
-	return workspace
 }

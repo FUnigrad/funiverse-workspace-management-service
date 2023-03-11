@@ -33,6 +33,7 @@ func NewServer(goClient goclient.GoClient) *Server {
 	router.GET("/workspace", server.GetAllWorkspace)
 	router.GET("/workspace/:id", server.GetWorkspaceById)
 	router.POST("/workspace", server.CreateWorkspace)
+	router.DELETE("/workspace", server.DeleteWorkspace)
 
 	server.Router = router
 

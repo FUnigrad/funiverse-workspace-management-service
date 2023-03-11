@@ -22,6 +22,14 @@ type PersitentVolumeClaimTemplate struct {
 	PvcSchema *unstructured.Unstructured
 }
 
+func NewPersitentVolumeResource() schema.GroupVersionResource {
+	return schema.GroupVersionResource{
+		Group:    "",
+		Version:  "v1",
+		Resource: "persistentvolumes",
+	}
+}
+
 func NewPersitentVolumeTemplate(config VolumeConfig) PersitentVolumeTemplate {
 	return PersitentVolumeTemplate{
 		PvRes: schema.GroupVersionResource{

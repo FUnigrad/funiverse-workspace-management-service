@@ -12,16 +12,16 @@ import (
 
 type Template = unstructured.Unstructured
 
-func (client *GoClient) CreateWorkspace(workspace model.Workspace) error {
-	_, err := client.CreateNamespace(workspace.Code)
+func (client *GoClient) CreateWorkspace(workspace model.Workspace) (err error) {
+	err = client.CreateNamespace(workspace.Code)
 
 	if err != nil {
-		fmt.Println(err.Error())
+		return
 	}
 
-	_, err = client.CreateConfigMap(workspace.Code)
+	err = client.CreateConfigMap(workspace.Code)
 	if err != nil {
-		fmt.Println(err.Error())
+		return
 	}
 
 	volumeConfig := template.VolumeConfig{
@@ -32,30 +32,38 @@ func (client *GoClient) CreateWorkspace(workspace model.Workspace) error {
 	err = client.CreateVolume(volumeConfig)
 
 	if err != nil {
-		fmt.Println(err.Error())
+		return
 	}
 	err = client.CreateMySql(workspace.Code)
 	if err != nil {
-		fmt.Println(err.Error())
+		return
+	}
+	err = client.CreateAppService(workspace.Code)
+	if err != nil {
+		return
+	}
+
+	err = client.CreateIngress(workspace.Code)
+	if err != nil {
+		return
 	}
 	return err
 }
 
-func (client *GoClient) CreateNamespace(name string) (*Template, error) {
+func (client *GoClient) CreateNamespace(name string) (err error) {
 	config := template.NamespaceConfig{
 		Name: name,
 	}
-	namespaceTemplate := template.NewNamespaceTemplate(config)
 
-	result, err := client.Client.Resource(namespaceTemplate.NamespaceRes).Create(
+	_, err = client.Client.Resource(template.NewNameSpaceResource()).Create(
 		context.TODO(),
-		namespaceTemplate.NamespaceSchema,
+		template.NewNamespaceTemplate(config),
 		metav1.CreateOptions{},
 	)
-	return result, err
+	return
 }
 
-func (client *GoClient) CreateConfigMap(namespace string) (*Template, error) {
+func (client *GoClient) CreateConfigMap(namespace string) (err error) {
 
 	config := template.ConfigMapConfig{
 		Name: namespace,
@@ -63,12 +71,12 @@ func (client *GoClient) CreateConfigMap(namespace string) (*Template, error) {
 
 	configmapTemplate := template.NewConfigMapTemplate(config)
 
-	result, err := client.Client.Resource(configmapTemplate.ConfigMapRes).Namespace(namespace).Create(
+	_, err = client.Client.Resource(configmapTemplate.ConfigMapRes).Namespace(namespace).Create(
 		context.TODO(),
 		configmapTemplate.ConfigMapSchema,
 		metav1.CreateOptions{},
 	)
-	return result, err
+	return
 }
 
 func (client *GoClient) CreateVolume(config template.VolumeConfig) error {
@@ -114,4 +122,112 @@ func (client *GoClient) CreateMySql(namespace string) error {
 	)
 
 	return err
+}
+
+func (client *GoClient) CreateAppService(namespace string) error {
+	appServiceTemplate := template.NewAppServiceTemplate()
+
+	_, err := client.Client.Resource(template.CreateDeploymentResource()).Namespace(namespace).Create(
+		context.TODO(),
+		appServiceTemplate.Deploy,
+		metav1.CreateOptions{},
+	)
+	if err != nil {
+		return err
+	}
+	_, err = client.Client.Resource(template.CreateServiceResource()).Namespace(namespace).Create(
+		context.TODO(),
+		appServiceTemplate.Service,
+		metav1.CreateOptions{},
+	)
+
+	return err
+}
+
+func (client *GoClient) CreateIngress(namespace string) error {
+
+	ingressTemplate := template.NewIngressTemplate(namespace)
+
+	_, err := client.Client.Resource(template.CreateIngressResource()).Namespace(namespace).Create(
+		context.TODO(),
+		ingressTemplate.AppService,
+		metav1.CreateOptions{},
+	)
+
+	if err != nil {
+		return err
+	}
+	_, err = client.Client.Resource(template.CreateIngressResource()).Namespace("frontend").Create(
+		context.TODO(),
+		ingressTemplate.WorkspaceWebApp,
+		metav1.CreateOptions{},
+	)
+
+	if err != nil {
+		return err
+	}
+
+	_, err = client.Client.Resource(template.CreateIngressResource()).Namespace("frontend").Create(
+		context.TODO(),
+		ingressTemplate.WorkspaceAdminWebApp,
+		metav1.CreateOptions{},
+	)
+
+	return err
+
+}
+
+func (client *GoClient) DeleteWorkspace(workspace model.Workspace) (err error) {
+
+	namespace := workspace.Code
+
+	deletePolicy := metav1.DeletePropagationForeground
+	deleteOptions := metav1.DeleteOptions{
+		PropagationPolicy: &deletePolicy,
+	}
+
+	//Delete All Namespace resource
+	err = client.Client.Resource(
+		template.NewNameSpaceResource(),
+	).Delete(
+		context.TODO(),
+		namespace,
+		deleteOptions,
+	)
+	if err != nil {
+		return
+	}
+	//Delete 2 Frontend Ingress
+	err = client.Client.Resource(
+		template.CreateIngressResource(),
+	).Namespace("frontend").Delete(
+		context.TODO(),
+		fmt.Sprintf("%s-workspace-ingress", namespace),
+		deleteOptions,
+	)
+
+	if err != nil {
+		return
+	}
+
+	err = client.Client.Resource(
+		template.CreateIngressResource(),
+	).Namespace("frontend").Delete(
+		context.TODO(),
+		fmt.Sprintf("%s-admin-ingress", namespace),
+		deleteOptions,
+	)
+
+	if err != nil {
+		return
+	}
+
+	err = client.Client.Resource(
+		template.NewPersitentVolumeResource(),
+	).Delete(
+		context.TODO(),
+		fmt.Sprintf("pv-for-%s", namespace),
+		deleteOptions,
+	)
+	return
 }

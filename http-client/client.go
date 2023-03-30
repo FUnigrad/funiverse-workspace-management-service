@@ -22,7 +22,7 @@ func NewClient(config config.Config) (*HttpClient, error) {
 	if config.Enviroment == "local" {
 		hostname = "authen.system.funiverse.world"
 	} else if config.Enviroment == "prod" {
-		hostname = "authen:8000"
+		hostname = "authen-service:8000"
 	} else {
 		return nil, errors.New("configuration incorrect at env")
 	}

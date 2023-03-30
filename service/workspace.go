@@ -62,6 +62,11 @@ func (service *WorkspaceService) DeleteWorkspace() bool {
 	return true
 }
 
-func (service *WorkspaceService) CreateWorkspace() *model.Workspace {
-	return nil
+func (service *WorkspaceService) CreateWorkspace(workspace model.WorkspaceDTO) (*model.Workspace, error) {
+
+	if err := service.goClient.CreateWorkspace(workspace); err != nil {
+		return nil, err
+	}
+
+	return nil, nil
 }

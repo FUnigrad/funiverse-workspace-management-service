@@ -12,18 +12,18 @@ type IngressTemplate struct {
 	WorkspaceAdminWebApp *unstructured.Unstructured
 }
 
-func NewIngressTemplate(name string) IngressTemplate {
+func NewIngressTemplate(namespace string, domain string) IngressTemplate {
 	return IngressTemplate{
 		WorkspaceAdminWebApp: &unstructured.Unstructured{
 			Object: map[string]interface{}{
 				"apiVersion": "k8s.nginx.org/v1",
 				"kind":       "VirtualServer",
 				"metadata": map[string]interface{}{
-					"name":      fmt.Sprintf("%s-admin-ingress", name),
+					"name":      fmt.Sprintf("%s-admin-ingress", namespace),
 					"namespace": "frontend",
 				},
 				"spec": map[string]interface{}{
-					"host": fmt.Sprintf("admin.%s.funiverse.world", name),
+					"host": fmt.Sprintf("admin.%s", domain),
 					"upstreams": []map[string]interface{}{
 						{
 							"name":    "workspace-admin-web-app",
@@ -47,11 +47,11 @@ func NewIngressTemplate(name string) IngressTemplate {
 				"apiVersion": "k8s.nginx.org/v1",
 				"kind":       "VirtualServer",
 				"metadata": map[string]interface{}{
-					"name":      fmt.Sprintf("%s-workspace-ingress", name),
+					"name":      fmt.Sprintf("%s-workspace-ingress", namespace),
 					"namespace": "frontend",
 				},
 				"spec": map[string]interface{}{
-					"host": fmt.Sprintf("%s.funiverse.world", name),
+					"host": domain,
 					"upstreams": []map[string]interface{}{
 						{
 							"name":    "workspace-web-app",
@@ -75,11 +75,11 @@ func NewIngressTemplate(name string) IngressTemplate {
 				"apiVersion": "k8s.nginx.org/v1",
 				"kind":       "VirtualServer",
 				"metadata": map[string]interface{}{
-					"name":      fmt.Sprintf("%s-app-service-ingress", name),
-					"namespace": name,
+					"name":      fmt.Sprintf("%s-app-service-ingress", namespace),
+					"namespace": namespace,
 				},
 				"spec": map[string]interface{}{
-					"host": fmt.Sprintf("api.%s.funiverse.world", name),
+					"host": fmt.Sprintf("api.%s", domain),
 					"upstreams": []map[string]interface{}{
 						{
 							"name":    "app-service",

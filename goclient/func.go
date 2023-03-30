@@ -2,7 +2,7 @@ package goclient
 
 import (
 	"context"
-	"fmt"
+	"strings"
 
 	"github.com/FUnigrad/funiverse-workspace-service/goclient/template"
 	"github.com/FUnigrad/funiverse-workspace-service/model"
@@ -12,38 +12,42 @@ import (
 
 type Template = unstructured.Unstructured
 
-func (client *GoClient) CreateWorkspace(workspace model.Workspace) (err error) {
-	err = client.CreateNamespace(workspace.Code)
+func (client *GoClient) CreateWorkspace(workspace model.WorkspaceDTO) (err error) {
+
+	namespace := strings.ToLower(workspace.Code)
+	domain := strings.ToLower(workspace.Domain)
+
+	err = client.CreateNamespace(namespace)
 
 	if err != nil {
 		return
 	}
 
-	err = client.CreateConfigMap(workspace.Code)
+	err = client.CreateConfigMap(namespace)
 	if err != nil {
 		return
 	}
 
 	volumeConfig := template.VolumeConfig{
-		Name:    workspace.Code,
-		Storage: "1",
+		Storage:    2,
+		AccessMode: "ReadWriteMany",
 	}
 
-	err = client.CreateVolume(volumeConfig)
+	err = client.CreateVolume(namespace, volumeConfig)
 
 	if err != nil {
 		return
 	}
-	err = client.CreateMySql(workspace.Code)
+	err = client.CreateMySql(namespace)
 	if err != nil {
 		return
 	}
-	err = client.CreateAppService(workspace.Code)
+	err = client.CreateAppService(namespace)
 	if err != nil {
 		return
 	}
 
-	err = client.CreateIngress(workspace.Code)
+	err = client.CreateIngress(namespace, domain)
 	if err != nil {
 		return
 	}
@@ -55,9 +59,9 @@ func (client *GoClient) CreateNamespace(name string) (err error) {
 		Name: name,
 	}
 
-	_, err = client.Client.Resource(template.NewNameSpaceResource()).Create(
+	_, err = client.Client.Resource(template.CreateNameSpaceResource()).Create(
 		context.TODO(),
-		template.NewNamespaceTemplate(config),
+		template.CreateNamespaceManifest(config),
 		metav1.CreateOptions{},
 	)
 	return
@@ -65,39 +69,19 @@ func (client *GoClient) CreateNamespace(name string) (err error) {
 
 func (client *GoClient) CreateConfigMap(namespace string) (err error) {
 
-	config := template.ConfigMapConfig{
-		Name: namespace,
-	}
-
-	configmapTemplate := template.NewConfigMapTemplate(config)
-
-	_, err = client.Client.Resource(configmapTemplate.ConfigMapRes).Namespace(namespace).Create(
+	_, err = client.Client.Resource(template.CreateConfigMapResource()).Namespace(namespace).Create(
 		context.TODO(),
-		configmapTemplate.ConfigMapSchema,
+		template.CreateConfigMapManifest(),
 		metav1.CreateOptions{},
 	)
 	return
 }
 
-func (client *GoClient) CreateVolume(config template.VolumeConfig) error {
+func (client *GoClient) CreateVolume(namespace string, config template.VolumeConfig) (err error) {
 
-	pvTemplate := template.NewPersitentVolumeTemplate(config)
-
-	_, err := client.Client.Resource(pvTemplate.PvRes).Create(
+	_, err = client.Client.Resource(template.CreatePVCResource()).Namespace(namespace).Create(
 		context.TODO(),
-		pvTemplate.PvSchema,
-		metav1.CreateOptions{},
-	)
-
-	if err != nil {
-		return err
-	}
-
-	pvcTemplate := template.NewPersitentVolumeClaimTemplate(config)
-
-	_, err = client.Client.Resource(pvcTemplate.PvcRes).Namespace(config.Name).Create(
-		context.TODO(),
-		pvcTemplate.PvcSchema,
+		template.CreatePVCManifest(config),
 		metav1.CreateOptions{},
 	)
 
@@ -144,9 +128,9 @@ func (client *GoClient) CreateAppService(namespace string) error {
 	return err
 }
 
-func (client *GoClient) CreateIngress(namespace string) error {
+func (client *GoClient) CreateIngress(namespace string, domain string) error {
 
-	ingressTemplate := template.NewIngressTemplate(namespace)
+	ingressTemplate := template.NewIngressTemplate(namespace, domain)
 
 	_, err := client.Client.Resource(template.CreateIngressResource()).Namespace(namespace).Create(
 		context.TODO(),
@@ -177,57 +161,57 @@ func (client *GoClient) CreateIngress(namespace string) error {
 
 }
 
-func (client *GoClient) DeleteWorkspace(workspace model.Workspace) (err error) {
+// func (client *GoClient) DeleteWorkspace(workspace model.Workspace) (err error) {
 
-	namespace := workspace.Code
+// 	namespace := workspace.Code
 
-	deletePolicy := metav1.DeletePropagationForeground
-	deleteOptions := metav1.DeleteOptions{
-		PropagationPolicy: &deletePolicy,
-	}
+// 	deletePolicy := metav1.DeletePropagationForeground
+// 	deleteOptions := metav1.DeleteOptions{
+// 		PropagationPolicy: &deletePolicy,
+// 	}
 
-	//Delete All Namespace resource
-	err = client.Client.Resource(
-		template.NewNameSpaceResource(),
-	).Delete(
-		context.TODO(),
-		namespace,
-		deleteOptions,
-	)
-	if err != nil {
-		return
-	}
-	//Delete 2 Frontend Ingress
-	err = client.Client.Resource(
-		template.CreateIngressResource(),
-	).Namespace("frontend").Delete(
-		context.TODO(),
-		fmt.Sprintf("%s-workspace-ingress", namespace),
-		deleteOptions,
-	)
+// 	//Delete All Namespace resource
+// 	err = client.Client.Resource(
+// 		template.NewNameSpaceResource(),
+// 	).Delete(
+// 		context.TODO(),
+// 		namespace,
+// 		deleteOptions,
+// 	)
+// 	if err != nil {
+// 		return
+// 	}
+// 	//Delete 2 Frontend Ingress
+// 	err = client.Client.Resource(
+// 		template.CreateIngressResource(),
+// 	).Namespace("frontend").Delete(
+// 		context.TODO(),
+// 		fmt.Sprintf("%s-workspace-ingress", namespace),
+// 		deleteOptions,
+// 	)
 
-	if err != nil {
-		return
-	}
+// 	if err != nil {
+// 		return
+// 	}
 
-	err = client.Client.Resource(
-		template.CreateIngressResource(),
-	).Namespace("frontend").Delete(
-		context.TODO(),
-		fmt.Sprintf("%s-admin-ingress", namespace),
-		deleteOptions,
-	)
+// 	err = client.Client.Resource(
+// 		template.CreateIngressResource(),
+// 	).Namespace("frontend").Delete(
+// 		context.TODO(),
+// 		fmt.Sprintf("%s-admin-ingress", namespace),
+// 		deleteOptions,
+// 	)
 
-	if err != nil {
-		return
-	}
+// 	if err != nil {
+// 		return
+// 	}
 
-	err = client.Client.Resource(
-		template.NewPersitentVolumeResource(),
-	).Delete(
-		context.TODO(),
-		fmt.Sprintf("pv-for-%s", namespace),
-		deleteOptions,
-	)
-	return
-}
+// 	err = client.Client.Resource(
+// 		template.NewPersitentVolumeResource(),
+// 	).Delete(
+// 		context.TODO(),
+// 		fmt.Sprintf("pv-for-%s", namespace),
+// 		deleteOptions,
+// 	)
+// 	return
+// }

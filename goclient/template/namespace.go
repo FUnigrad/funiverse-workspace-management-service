@@ -5,7 +5,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-func NewNameSpaceResource() schema.GroupVersionResource {
+func CreateNameSpaceResource() schema.GroupVersionResource {
 	return schema.GroupVersionResource{
 		Group:    "",
 		Version:  "v1",
@@ -17,7 +17,7 @@ type NamespaceConfig struct {
 	Name string `json:"name"`
 }
 
-func NewNamespaceTemplate(config NamespaceConfig) *unstructured.Unstructured {
+func CreateNamespaceManifest(config NamespaceConfig) *unstructured.Unstructured {
 	return &unstructured.Unstructured{
 		Object: map[string]interface{}{
 			"apiVersion": "v1",

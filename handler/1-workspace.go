@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/FUnigrad/funiverse-workspace-service/model"
 	"github.com/gin-gonic/gin"
 )
 
@@ -36,9 +37,21 @@ func (server *Server) GetWorkspaceById(ctx *gin.Context) {
 }
 
 func (server *Server) CreateWorkspace(ctx *gin.Context) {
-	ctx.AbortWithStatusJSON(http.StatusNotImplemented, gin.H{
-		"func": "CreateWorkspace",
-	})
+	var workspace model.WorkspaceDTO
+	if err := ctx.ShouldBindJSON(&workspace); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	result, err := server.WorkspaceSerive.CreateWorkspace(workspace)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, err)
+	} else {
+		ctx.JSON(http.StatusOK, result)
+	}
 }
 
 func (server *Server) DeleteWorkspace(ctx *gin.Context) {

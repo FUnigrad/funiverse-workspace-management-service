@@ -6,35 +6,31 @@ import (
 )
 
 type ConfigMapConfig struct {
-	Name string
+	Namespace string
 }
 
-type ConfigMapTemplate struct {
-	ConfigMapRes    schema.GroupVersionResource
-	ConfigMapSchema *unstructured.Unstructured
+func CreateConfigMapResource() schema.GroupVersionResource {
+	return schema.GroupVersionResource{
+		Group:    "",
+		Version:  "v1",
+		Resource: "configmaps",
+	}
 }
 
-func NewConfigMapTemplate(config ConfigMapConfig) ConfigMapTemplate {
-	return ConfigMapTemplate{
-		ConfigMapRes: schema.GroupVersionResource{
-			Group:    "",
-			Version:  "v1",
-			Resource: "configmaps",
-		},
-		ConfigMapSchema: &unstructured.Unstructured{
-			Object: map[string]interface{}{
-				"apiVersion": "v1",
-				"Kind":       "ConfigMap",
-				"metadata": map[string]interface{}{
-					"name": "config",
-				},
-				"data": map[string]interface{}{
-					"MYSQL_ROOT_PASSWORD":           "root",
-					"MYSQL_DATABASE":                "mydb",
-					"SPRING_DATASOURCE_URL":         "jdbc:mysql://mysql:3306/mydb",
-					"SPRING_DATASOURCE_USERNAME":    "root",
-					"SPRING_JPA_HIBERNATE_DDL_AUTO": "update",
-				},
+func CreateConfigMapManifest() *unstructured.Unstructured {
+	return &unstructured.Unstructured{
+		Object: map[string]interface{}{
+			"apiVersion": "v1",
+			"Kind":       "ConfigMap",
+			"metadata": map[string]interface{}{
+				"name": "config",
+			},
+			"data": map[string]interface{}{
+				"MYSQL_ROOT_PASSWORD":           "root",
+				"MYSQL_DATABASE":                "mydb",
+				"SPRING_DATASOURCE_URL":         "jdbc:mysql://mysql:3306/mydb",
+				"SPRING_DATASOURCE_USERNAME":    "root",
+				"SPRING_JPA_HIBERNATE_DDL_AUTO": "update",
 			},
 		},
 	}

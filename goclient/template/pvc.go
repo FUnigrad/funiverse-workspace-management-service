@@ -8,85 +8,34 @@ import (
 )
 
 type VolumeConfig struct {
-	Name    string
-	Storage string
+	Storage    int
+	AccessMode string
 }
 
-type PersitentVolumeTemplate struct {
-	PvRes    schema.GroupVersionResource
-	PvSchema *unstructured.Unstructured
-}
-
-type PersitentVolumeClaimTemplate struct {
-	PvcRes    schema.GroupVersionResource
-	PvcSchema *unstructured.Unstructured
-}
-
-func NewPersitentVolumeResource() schema.GroupVersionResource {
+func CreatePVCResource() schema.GroupVersionResource {
 	return schema.GroupVersionResource{
 		Group:    "",
 		Version:  "v1",
-		Resource: "persistentvolumes",
+		Resource: "persistentvolumeclaims",
 	}
 }
 
-func NewPersitentVolumeTemplate(config VolumeConfig) PersitentVolumeTemplate {
-	return PersitentVolumeTemplate{
-		PvRes: schema.GroupVersionResource{
-			Group:    "",
-			Version:  "v1",
-			Resource: "persistentvolumes",
-		},
-		PvSchema: &unstructured.Unstructured{
-			Object: map[string]interface{}{
-				"apiVersion": "v1",
-				"kind":       "PersistentVolume",
-				"metadata": map[string]interface{}{
-					"name": fmt.Sprintf("pv-for-%s", config.Name),
-					"labels": map[string]interface{}{
-						"type": "local",
-					},
-				},
-				"spec": map[string]interface{}{
-					"storageClassName": "hostpath",
-					"capacity": map[string]interface{}{
-						"storage": fmt.Sprintf("%sGi", config.Storage),
-					},
-					"accessModes": []string{
-						"ReadWriteOnce",
-					},
-					"hostPath": map[string]interface{}{
-						"path": fmt.Sprintf("/mnt/data/%s", config.Name),
-					},
-				},
+func CreatePVCManifest(config VolumeConfig) *unstructured.Unstructured {
+	return &unstructured.Unstructured{
+		Object: map[string]interface{}{
+			"apiVersion": "v1",
+			"kind":       "PersistentVolumeClaim",
+			"metadata": map[string]interface{}{
+				"name": "mysql-volume",
 			},
-		},
-	}
-}
-
-func NewPersitentVolumeClaimTemplate(config VolumeConfig) PersitentVolumeClaimTemplate {
-	return PersitentVolumeClaimTemplate{
-		PvcRes: schema.GroupVersionResource{
-			Group:    "",
-			Version:  "v1",
-			Resource: "persistentvolumeclaims",
-		},
-		PvcSchema: &unstructured.Unstructured{
-			Object: map[string]interface{}{
-				"apiVersion": "v1",
-				"kind":       "PersistentVolumeClaim",
-				"metadata": map[string]interface{}{
-					"name": "pv-claim",
+			"spec": map[string]interface{}{
+				"storageClassName": "longhorn",
+				"accessModes": []string{
+					config.AccessMode,
 				},
-				"spec": map[string]interface{}{
-					"storageClassName": "hostpath",
-					"accessModes": []string{
-						"ReadWriteOnce",
-					},
-					"resources": map[string]interface{}{
-						"requests": map[string]interface{}{
-							"storage": fmt.Sprintf("%sGi", config.Storage),
-						},
+				"resources": map[string]interface{}{
+					"requests": map[string]interface{}{
+						"storage": fmt.Sprintf("%dGi", config.Storage),
 					},
 				},
 			},

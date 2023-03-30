@@ -10,9 +10,9 @@ type Workspace struct {
 }
 
 type WorkspaceDTO struct {
-	Name         string `json:"name"`
-	Code         string `json:"code"`
-	Domain       string `json:"domain"`
-	PersonalMail string `json:"personalMail"`
-	EduMail      string `json:"eduMail"`
+	Name         string `json:"name" binding:"required"`
+	Code         string `json:"code" binding:"required"`
+	Domain       string `json:"domain" binding:"required"`
+	PersonalMail string `json:"personalMail" binding:"required,email"`
+	EduMail      string `json:"eduMail" binding:"required,email"`
 }

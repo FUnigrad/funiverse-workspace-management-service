@@ -71,7 +71,7 @@ func NewMySqlTemplate() MySqlTemplate {
 								{
 									"name": "mysql-persistent-storage",
 									"persistentVolumeClaim": map[string]interface{}{
-										"claimName": "pv-claim",
+										"claimName": "mysql-volume",
 									},
 								},
 							},

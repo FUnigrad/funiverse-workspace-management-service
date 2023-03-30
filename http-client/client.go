@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 
@@ -22,7 +22,7 @@ func NewClient(config config.Config) (*HttpClient, error) {
 	if config.Enviroment == "local" {
 		hostname = "authen.system.funiverse.world"
 	} else if config.Enviroment == "prod" {
-		hostname = "authen"
+		hostname = "authen:8000"
 	} else {
 		return nil, errors.New("configuration incorrect at env")
 	}
@@ -48,7 +48,7 @@ func (client *HttpClient) GetAllWorkspace(token string) (workspaces []model.Work
 	}
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 
 	if err != nil {
 		log.Print(err.Error())
@@ -76,7 +76,7 @@ func (client *HttpClient) GetWorkspaceById(id int, token string) (workspace *mod
 	}
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 
 	if err != nil {
 		log.Print(err.Error())

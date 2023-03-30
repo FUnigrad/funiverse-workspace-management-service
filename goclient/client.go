@@ -31,7 +31,7 @@ func GetOutClusterConfig() (config *rest.Config) {
 	return
 }
 
-func NewClient(config config.Config) (GoClient, error) {
+func NewClient(config config.Config) (*GoClient, error) {
 	var configK8s *rest.Config
 	if config.Enviroment == "local" {
 		configK8s = GetOutClusterConfig()
@@ -47,5 +47,5 @@ func NewClient(config config.Config) (GoClient, error) {
 		log.Fatalln(err.Error())
 	}
 
-	return GoClient{Client: client}, err
+	return &GoClient{Client: client}, err
 }

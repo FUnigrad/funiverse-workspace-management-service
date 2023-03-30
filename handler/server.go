@@ -4,31 +4,30 @@ import (
 	"fmt"
 
 	"github.com/FUnigrad/funiverse-workspace-service/config"
-	"github.com/FUnigrad/funiverse-workspace-service/goclient"
 	"github.com/FUnigrad/funiverse-workspace-service/service"
 	"github.com/gin-gonic/gin"
 )
 
+/*
+Server contain service
+*/
 type Server struct {
-	GoClient        goclient.GoClient
+	config          config.Config
 	Router          *gin.Engine
-	UserService     service.IUserService
-	WorkspaceSerive service.IWorkspaceService
+	WorkspaceSerive *service.WorkspaceService
 }
 
-func NewServer(goClient goclient.GoClient) *Server {
-
-	userService := service.NewUserService()
-	workService := service.NewWorkspaceService()
-
+func NewServer(config config.Config) *Server {
+	//Create Service
+	workService := service.NewWorkspaceService(config)
 	server := &Server{
-		GoClient:        goClient,
-		UserService:     userService,
+		config:          config,
 		WorkspaceSerive: workService,
 	}
+
 	router := gin.Default()
 	//Add Route
-	router.GET("/", HealthCheck())
+	router.GET("/", server.HealthCheck)
 
 	router.GET("/workspace", server.GetAllWorkspace)
 	router.GET("/workspace/:id", server.GetWorkspaceById)
@@ -40,7 +39,9 @@ func NewServer(goClient goclient.GoClient) *Server {
 	return server
 }
 
-func (server *Server) Start(config config.Config) error {
+func (server *Server) Start() error {
+
+	config := server.config
 
 	address := fmt.Sprintf("0.0.0.0:%s", config.Port)
 	return server.Router.Run(address)

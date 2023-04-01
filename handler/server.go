@@ -2,6 +2,7 @@ package handler
 
 import (
 	"fmt"
+	"net/http"
 
 	"github.com/FUnigrad/funiverse-workspace-service/config"
 	"github.com/FUnigrad/funiverse-workspace-service/service"
@@ -17,6 +18,16 @@ type Server struct {
 	WorkspaceSerive *service.WorkspaceService
 }
 
+func AuthRequired() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		if len(ctx.Request.Header["Authorization"]) == 0 {
+			ctx.AbortWithStatus(http.StatusUnauthorized)
+			return
+		}
+		ctx.Next()
+	}
+}
+
 func NewServer(config config.Config) *Server {
 	//Create Service
 	workService := service.NewWorkspaceService(config)
@@ -25,14 +36,24 @@ func NewServer(config config.Config) *Server {
 		WorkspaceSerive: workService,
 	}
 
-	router := gin.Default()
-	//Add Route
+	router := gin.New()
+
+	// Global middleware
+	router.Use(gin.Logger())
+	router.Use(gin.Recovery())
+
+	//Healcheck
 	router.GET("/", server.HealthCheck)
 
-	router.GET("/workspace", server.GetAllWorkspace)
-	router.GET("/workspace/:id", server.GetWorkspaceById)
-	router.POST("/workspace", server.CreateWorkspace)
-	router.DELETE("/workspace", server.DeleteWorkspace)
+	authorized := router.Group("/")
+
+	authorized.Use(AuthRequired())
+	{
+		authorized.GET("/workspace", server.GetAllWorkspace)
+		authorized.GET("/workspace/:id", server.GetWorkspaceById)
+		authorized.POST("/workspace", server.CreateWorkspace)
+		authorized.DELETE("/workspace/:id", server.DeleteWorkspace)
+	}
 
 	server.Router = router
 
@@ -43,6 +64,12 @@ func (server *Server) Start() error {
 
 	config := server.config
 
+	if config.Enviroment == "prod" {
+		gin.SetMode(gin.ReleaseMode)
+	}
+
 	address := fmt.Sprintf("0.0.0.0:%s", config.Port)
-	return server.Router.Run(address)
+
+	err := server.Router.Run(address)
+	return err
 }

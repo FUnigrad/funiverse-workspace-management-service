@@ -1,6 +1,7 @@
 package httpclient
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -39,6 +40,8 @@ func (client *HttpClient) GetAllWorkspace(token string) (workspaces []model.Work
 	url := fmt.Sprintf("http://%s/workspace", client.Hostname)
 	req, _ := http.NewRequest("GET", url, nil)
 	req.Header.Set("Authorization", token)
+
+	log.Println(token)
 
 	resp, err := client.Client.Do(req)
 
@@ -89,4 +92,56 @@ func (client *HttpClient) GetWorkspaceById(id int, token string) (workspace *mod
 	}
 
 	return
+}
+
+func (client *HttpClient) CreateWorkspace(workspace model.WorkspaceDTO, token string) (*model.Workspace, error) {
+	url := fmt.Sprintf("http://%s/workspace", client.Hostname)
+
+	request_body, _ := json.Marshal(workspace)
+	req, _ := http.NewRequest("POST", url, bytes.NewReader(request_body))
+
+	req.Header.Set("Authorization", token)
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := client.Client.Do(req)
+
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.StatusCode != 201 {
+		log.Print(string(body))
+		return nil, errors.New(string(body))
+	}
+
+	var result *model.Workspace
+
+	if err = json.Unmarshal(body, &result); err != nil {
+		log.Print(err.Error())
+		return nil, err
+	}
+
+	return result, nil
+
+}
+
+func (client *HttpClient) DeleteWorkspace(id int, token string) bool {
+	url := fmt.Sprintf("http://%s/workspace/%d", client.Hostname, id)
+
+	req, _ := http.NewRequest("DELETE", url, nil)
+	req.Header.Set("Authorization", token)
+	resp, _ := client.Client.Do(req)
+
+	if resp.StatusCode != 200 {
+		return false
+	} else {
+		return true
+	}
 }

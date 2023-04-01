@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"log"
 
 	"github.com/FUnigrad/funiverse-workspace-service/config"
@@ -58,15 +59,30 @@ func (service *WorkspaceService) GetWorkspaceById(id int, token string) *model.W
 	return workspace
 }
 
-func (service *WorkspaceService) DeleteWorkspace() bool {
-	return true
+func (service *WorkspaceService) DeleteWorkspace(workspace model.Workspace, token string) (err error) {
+
+	err = service.goClient.DeleteWorkspace(workspace)
+
+	if err != nil {
+		return
+	}
+
+	is_deleted := service.httpClient.DeleteWorkspace(workspace.Id, token)
+	if is_deleted {
+		return nil
+	} else {
+		return errors.New("cannot delete ws resources")
+	}
+
 }
 
-func (service *WorkspaceService) CreateWorkspace(workspace model.WorkspaceDTO) (*model.Workspace, error) {
+func (service *WorkspaceService) CreateWorkspace(workspace model.WorkspaceDTO, token string) (*model.Workspace, error) {
 
 	if err := service.goClient.CreateWorkspace(workspace); err != nil {
 		return nil, err
 	}
 
-	return nil, nil
+	result, err := service.httpClient.CreateWorkspace(workspace, token)
+
+	return result, err
 }

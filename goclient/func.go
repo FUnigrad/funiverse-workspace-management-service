@@ -2,7 +2,11 @@ package goclient
 
 import (
 	"context"
+	"fmt"
+	"log"
+	"net/http"
 	"strings"
+	"time"
 
 	"github.com/FUnigrad/funiverse-workspace-service/goclient/template"
 	"github.com/FUnigrad/funiverse-workspace-service/model"
@@ -51,6 +55,16 @@ func (client *GoClient) CreateWorkspace(workspace model.WorkspaceDTO) (err error
 	if err != nil {
 		return
 	}
+
+	log.Println(time.Now().Second())
+	for {
+		resp, _ := http.Get(fmt.Sprintf("http://api.%s/actuator/health", domain))
+		if resp.StatusCode == 200 {
+			break
+		}
+	}
+	log.Println(time.Now().Second())
+
 	return err
 }
 
@@ -161,57 +175,50 @@ func (client *GoClient) CreateIngress(namespace string, domain string) error {
 
 }
 
-// func (client *GoClient) DeleteWorkspace(workspace model.Workspace) (err error) {
+func (client *GoClient) DeleteWorkspace(workspace model.Workspace) (err error) {
 
-// 	namespace := workspace.Code
+	namespace := strings.ToLower(workspace.Code)
 
-// 	deletePolicy := metav1.DeletePropagationForeground
-// 	deleteOptions := metav1.DeleteOptions{
-// 		PropagationPolicy: &deletePolicy,
-// 	}
+	deletePolicy := metav1.DeletePropagationForeground
+	deleteOptions := metav1.DeleteOptions{
+		PropagationPolicy: &deletePolicy,
+	}
 
-// 	//Delete All Namespace resource
-// 	err = client.Client.Resource(
-// 		template.NewNameSpaceResource(),
-// 	).Delete(
-// 		context.TODO(),
-// 		namespace,
-// 		deleteOptions,
-// 	)
-// 	if err != nil {
-// 		return
-// 	}
-// 	//Delete 2 Frontend Ingress
-// 	err = client.Client.Resource(
-// 		template.CreateIngressResource(),
-// 	).Namespace("frontend").Delete(
-// 		context.TODO(),
-// 		fmt.Sprintf("%s-workspace-ingress", namespace),
-// 		deleteOptions,
-// 	)
+	//Delete 2 Frontend Ingress
+	err = client.Client.Resource(
+		template.CreateIngressResource(),
+	).Namespace("frontend").Delete(
+		context.TODO(),
+		fmt.Sprintf("%s-workspace-ingress", namespace),
+		deleteOptions,
+	)
 
-// 	if err != nil {
-// 		return
-// 	}
+	if err != nil {
+		return
+	}
 
-// 	err = client.Client.Resource(
-// 		template.CreateIngressResource(),
-// 	).Namespace("frontend").Delete(
-// 		context.TODO(),
-// 		fmt.Sprintf("%s-admin-ingress", namespace),
-// 		deleteOptions,
-// 	)
+	err = client.Client.Resource(
+		template.CreateIngressResource(),
+	).Namespace("frontend").Delete(
+		context.TODO(),
+		fmt.Sprintf("%s-admin-ingress", namespace),
+		deleteOptions,
+	)
 
-// 	if err != nil {
-// 		return
-// 	}
+	if err != nil {
+		return
+	}
+	//Delete All Namespace resource
+	err = client.Client.Resource(
+		template.CreateNameSpaceResource(),
+	).Delete(
+		context.TODO(),
+		namespace,
+		deleteOptions,
+	)
+	if err != nil {
+		return
+	}
 
-// 	err = client.Client.Resource(
-// 		template.NewPersitentVolumeResource(),
-// 	).Delete(
-// 		context.TODO(),
-// 		fmt.Sprintf("pv-for-%s", namespace),
-// 		deleteOptions,
-// 	)
-// 	return
-// }
+	return
+}

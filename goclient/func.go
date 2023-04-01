@@ -3,10 +3,8 @@ package goclient
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
-	"time"
 
 	"github.com/FUnigrad/funiverse-workspace-service/goclient/template"
 	"github.com/FUnigrad/funiverse-workspace-service/model"
@@ -56,14 +54,12 @@ func (client *GoClient) CreateWorkspace(workspace model.WorkspaceDTO) (err error
 		return
 	}
 
-	log.Println(time.Now().Second())
 	for {
 		resp, _ := http.Get(fmt.Sprintf("http://api.%s/actuator/health", domain))
 		if resp.StatusCode == 200 {
 			break
 		}
 	}
-	log.Println(time.Now().Second())
 
 	return err
 }

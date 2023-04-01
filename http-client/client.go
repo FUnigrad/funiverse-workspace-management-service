@@ -41,8 +41,6 @@ func (client *HttpClient) GetAllWorkspace(token string) (workspaces []model.Work
 	req, _ := http.NewRequest("GET", url, nil)
 	req.Header.Set("Authorization", token)
 
-	log.Println(token)
-
 	resp, err := client.Client.Do(req)
 
 	if err != nil {

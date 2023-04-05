@@ -6,6 +6,7 @@ import (
 
 	"github.com/FUnigrad/funiverse-workspace-service/config"
 	"github.com/FUnigrad/funiverse-workspace-service/service"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -41,6 +42,8 @@ func NewServer(config config.Config) *Server {
 	// Global middleware
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
+
+	router.Use(cors.Default())
 
 	//Healcheck
 	router.GET("/", server.HealthCheck)

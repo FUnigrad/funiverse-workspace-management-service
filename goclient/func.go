@@ -56,6 +56,9 @@ func (client *GoClient) CreateWorkspace(workspace model.WorkspaceDTO) (err error
 
 	for {
 		resp, _ := http.Get(fmt.Sprintf("https://api.%s/actuator/health", domain))
+		if resp == nil {
+			continue
+		}
 		if resp.StatusCode == 200 {
 			break
 		}

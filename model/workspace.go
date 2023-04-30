@@ -14,5 +14,4 @@ type WorkspaceDTO struct {
 	Code         string `json:"code" binding:"required"`
 	Domain       string `json:"domain" binding:"required"`
 	PersonalMail string `json:"personalMail" binding:"required,email"`
-	EduMail      string `json:"eduMail" binding:"required,email"`
 }

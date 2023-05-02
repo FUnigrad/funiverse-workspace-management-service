@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"log"
+	"time"
 
 	"github.com/FUnigrad/funiverse-workspace-service/config"
 	"github.com/FUnigrad/funiverse-workspace-service/goclient"
@@ -81,6 +82,8 @@ func (service *WorkspaceService) CreateWorkspace(workspace model.WorkspaceDTO, t
 	if err := service.goClient.CreateWorkspace(workspace); err != nil {
 		return nil, err
 	}
+
+	time.Sleep(1 * time.Minute)
 
 	result, err := service.httpClient.CreateWorkspace(workspace, token)
 

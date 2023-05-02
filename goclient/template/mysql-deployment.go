@@ -31,7 +31,7 @@ func NewMySqlTemplate() MySqlTemplate {
 						"spec": map[string]interface{}{
 							"containers": []map[string]interface{}{
 								{
-									"image": "mysql:5.6",
+									"image": "mysql",
 									"name":  "mysql",
 									"env": []map[string]interface{}{
 										{

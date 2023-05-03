@@ -2,7 +2,6 @@ package template
 
 import (
 	"fmt"
-	"strings"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
@@ -25,12 +24,12 @@ func NewIngressTemplate(namespace string, domain string) IngressTemplate {
 				},
 				"spec": map[string]interface{}{
 					"host": fmt.Sprintf("admin.%s", domain),
-					"tls": map[string]interface{}{
-						"secret": fmt.Sprintf("admin-%s-ssl", strings.Join(strings.Split(domain, "."), "-")),
-						"cert-manager": map[string]interface{}{
-							"cluster-issuer": "letsencrypt-prod",
-						},
-					},
+					// "tls": map[string]interface{}{
+					// 	"secret": fmt.Sprintf("admin-%s-ssl", strings.Join(strings.Split(domain, "."), "-")),
+					// 	"cert-manager": map[string]interface{}{
+					// 		"cluster-issuer": "letsencrypt-prod",
+					// 	},
+					// },
 					"upstreams": []map[string]interface{}{
 						{
 							"name":    "workspace-admin-web-app",
@@ -59,12 +58,12 @@ func NewIngressTemplate(namespace string, domain string) IngressTemplate {
 				},
 				"spec": map[string]interface{}{
 					"host": domain,
-					"tls": map[string]interface{}{
-						"secret": fmt.Sprintf("%s-ssl", strings.Join(strings.Split(domain, "."), "-")),
-						"cert-manager": map[string]interface{}{
-							"cluster-issuer": "letsencrypt-prod",
-						},
-					},
+					// "tls": map[string]interface{}{
+					// 	"secret": fmt.Sprintf("%s-ssl", strings.Join(strings.Split(domain, "."), "-")),
+					// 	"cert-manager": map[string]interface{}{
+					// 		"cluster-issuer": "letsencrypt-prod",
+					// 	},
+					// },
 					"upstreams": []map[string]interface{}{
 						{
 							"name":    "workspace-web-app",
@@ -93,12 +92,12 @@ func NewIngressTemplate(namespace string, domain string) IngressTemplate {
 				},
 				"spec": map[string]interface{}{
 					"host": fmt.Sprintf("api.%s", domain),
-					"tls": map[string]interface{}{
-						"secret": fmt.Sprintf("api-%s-ssl", strings.Join(strings.Split(domain, "."), "-")),
-						"cert-manager": map[string]interface{}{
-							"cluster-issuer": "letsencrypt-prod",
-						},
-					},
+					// "tls": map[string]interface{}{
+					// 	"secret": fmt.Sprintf("api-%s-ssl", strings.Join(strings.Split(domain, "."), "-")),
+					// 	"cert-manager": map[string]interface{}{
+					// 		"cluster-issuer": "letsencrypt-prod",
+					// 	},
+					// },
 					"upstreams": []map[string]interface{}{
 						{
 							"name":    "app-service",

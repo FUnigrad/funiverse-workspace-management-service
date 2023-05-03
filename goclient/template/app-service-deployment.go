@@ -17,7 +17,7 @@ func NewAppServiceTemplate() AppServiceTemplate {
 					"name": "app-service",
 				},
 				"spec": map[string]interface{}{
-					"replicas":             2,
+					"replicas":             1,
 					"revisionHistoryLimit": 0,
 					"minReadySeconds":      10,
 					"selector": map[string]interface{}{
